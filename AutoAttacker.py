@@ -1,6 +1,9 @@
 """
-Version 0.5
+Version 0.5.1
 2022-07-05
+
+-New Stuff-
+-Added support for positional parameters to set army sizes
 
 A small python script for automating dice-rolls when playing Risk. Since, you know, that can get
 tedious after a while late-game. Prompts for the size of each army, asks for a stop-loss and prompts 
@@ -17,7 +20,7 @@ Planned updates:
 - GUI? (once I start playing around with GUI frameworks maybe) 
 """
 
-import random
+import random, sys 
 
 ################################
 ###   Function Definitions   ###
@@ -73,17 +76,16 @@ def attack():
     defDice = diceCountDef(defArmy)
 
     #"Rolls the dice" for each side and appends the values to the empty lists
+    #Also appends the value to the stat lists
     for i in range(atkDice):
         atkRolls.append(random.randint(1,6))
+        allAtkRolls.append(atkRolls[-1])
+        allRolls.append(atkRolls[-1])    
     for i in range(defDice):
         defRolls.append(random.randint(1,6))
+        allDefRolls.append(defRolls[-1])
+        allRolls.append(defRolls[-1])
     
-    for i in atkRolls:
-        allAtkRolls.append(i)
-        allRolls.append(i)        
-    for i in defRolls:
-        allDefRolls.append(i)
-        allRolls.append(i)
 
     #Sorting the results of the rolls 
     atkRolls.sort(reverse=True)
@@ -127,18 +129,31 @@ allRolls = []
 allAtkRolls = []
 allDefRolls = []
 
-#Prompting for the size of each army and when to stop fighting
-print("Enter the number of attackers: ", end="")
-atkArmy = numberPrompt()
-while atkArmy < 2:
-    print("Can't attack with less than 2 troops. Try again:", end="")
-    atkArmy = numberPrompt()
 
-print("Enter the number of defenders: ", end="")
-defArmy = numberPrompt()
-while atkArmy < 1:
-    print("Can't defend with less than 1 troop. Try again:", end="")
-    atkArmy = numberPrompt()
+# Checks for positional parameters, set them as the army sizes if they're numbers
+# First parameter = attacking army
+# Second parameter = defending army
+
+if sys.argv[1]:
+    try:
+        atkArmy = int(sys.argv[1])
+    except ValueError:
+        print("Enter the number of attackers: ", end="")
+        atkArmy = numberPrompt()
+        while atkArmy < 2:
+            print("Can't attack with less than 2 troops. Enter the number of attackers:", end="")
+            atkArmy = numberPrompt()
+
+if sys.argv[2]:
+    try:
+        defArmy= int(sys.argv[2])
+    except ValueError:
+        print("Enter the number of defenders: ", end="")
+        defArmy = numberPrompt()
+        while atkArmy < 2:
+            print("Can't attack with less than 2 troops. Enter the number of defenders:", end="")
+            atkArmy = numberPrompt()
+
 
 print("Enter army size to stop attacking (leave blank to fight to the last man):", end="")
 stopLoss = numberPrompt()
@@ -160,6 +175,18 @@ while atkArmy > stopLoss and defArmy > 0:
     if more == "n" or more == "N":
         break
 
-# print("All dice rolls:", allRolls)
-# print("All attack rolls:", allAtkRolls)
-# print("All defence rolls:", allDefRolls)
+#Printing the results of the dice rolls
+print("All dice rolls:", allRolls)
+print("Total number of dice rolled:", len(allRolls))
+allRollsStats = {number: allRolls.count(number) for number in allRolls}
+print(allRollsStats)
+
+print("All attack rolls:", allAtkRolls)
+print("Total number of attack dice rolled:", len(allAtkRolls))
+allAtkRollsStats = {number: allAtkRolls.count(number) for number in allAtkRolls}
+print(allAtkRollsStats)
+
+print("All defence rolls:", allDefRolls)
+print("Total number of defence dice rolled:", len(allDefRolls))
+allDefRollsStats = {number: allDefRolls.count(number) for number in allDefRolls}
+print(allDefRollsStats)
